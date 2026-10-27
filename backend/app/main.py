@@ -22,6 +22,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def vercel_path_middleware(request, call_next):
+    matched = request.headers.get("x-matched-path")
+    if matched:
+        request.scope["path"] = matched
+    return await call_next(request)
+
+
 _cache = None
 
 

@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 import math
 
 import httpx
-import pandas as pd
 
 from app.config import ELEXON_BASE_URL
 
@@ -18,12 +17,18 @@ class ElexonError(RuntimeError):
 
 
 def _time(value):
-    if value is None:
+    if not value:
         return None
-    parsed = pd.to_datetime(value, utc=True, errors="coerce")
-    if pd.isna(parsed):
+    if isinstance(value, datetime):
+        return value.astimezone(timezone.utc)
+    try:
+        clean = str(value).replace("Z", "+00:00")
+        dt = datetime.fromisoformat(clean)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
+    except (ValueError, TypeError):
         return None
-    return parsed.to_pydatetime()
 
 
 def _number(value):

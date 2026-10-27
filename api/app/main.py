@@ -66,10 +66,8 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.get("")
-@router.get("/")
-@router.get("/api")
-@router.get("/api/index.py")
+@app.get("/")
+@app.get("/api")
 async def root():
     return {
         "status": "online",

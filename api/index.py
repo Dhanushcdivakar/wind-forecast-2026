@@ -2,28 +2,23 @@ import os
 import sys
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(cur_dir)
+backend_dir = os.path.join(project_root, "backend")
 
-if os.path.exists(os.path.join(cur_dir, "app")):
-    if cur_dir not in sys.path:
-        sys.path.insert(0, cur_dir)
+# Support both possible layouts:
+# 1. api/index.py and app/ in the same directory
+# 2. api/index.py and backend/app/
+if os.path.isdir(os.path.join(cur_dir, "app")):
+    app_dir = cur_dir
+elif os.path.isdir(os.path.join(backend_dir, "app")):
+    app_dir = backend_dir
 else:
-    backend_dir = os.path.abspath(os.path.join(cur_dir, "..", "backend"))
-    if backend_dir not in sys.path:
-        sys.path.insert(0, backend_dir)
+    raise RuntimeError(
+        "Cannot find the FastAPI app directory. "
+        f"Checked {cur_dir} and {backend_dir}"
+    )
 
-try:
-    from app.main import app
-except Exception as e:
-    import traceback
-    from fastapi import FastAPI
-    from fastapi.responses import JSONResponse
+if app_dir not in sys.path:
+    sys.path.insert(0, app_dir)
 
-    err_trace = traceback.format_exc()
-    app = FastAPI()
-
-    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-    async def debug_error(path: str = ""):
-        return JSONResponse(
-            status_code=500,
-            content={"error": str(e), "traceback": err_trace.splitlines()},
-        )
+from app.main import app

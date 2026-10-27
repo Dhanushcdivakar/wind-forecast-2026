@@ -37,38 +37,6 @@ app.add_middleware(
 # Vercel Path Middleware
 # --------------------------------------------------
 
-@app.middleware("http")
-async def vercel_path_middleware(request: Request, call_next):
-    """
-    Handle Vercel's internal Python function path when it is
-    exposed to the FastAPI application.
-
-    Prefer the original matched route when Vercel provides it.
-    Otherwise, normalize the internal /api/index.py path.
-    """
-
-    matched_path = request.headers.get("x-matched-path")
-    path = request.scope.get("path", "")
-
-    if matched_path:
-        if matched_path == "/api/index.py":
-            request.scope["path"] = "/"
-        elif matched_path.startswith("/api/index.py/"):
-            request.scope["path"] = matched_path.replace(
-                "/api/index.py", "", 1
-            ) or "/"
-        else:
-            request.scope["path"] = matched_path
-
-    elif path == "/api/index.py":
-        request.scope["path"] = "/"
-
-    elif path.startswith("/api/index.py/"):
-        request.scope["path"] = path.replace(
-            "/api/index.py", "", 1
-        ) or "/"
-
-    return await call_next(request)
 
 
 # --------------------------------------------------

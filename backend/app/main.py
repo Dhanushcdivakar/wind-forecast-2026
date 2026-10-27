@@ -34,12 +34,6 @@ app.add_middleware(
 
 
 # --------------------------------------------------
-# Vercel Path Middleware
-# --------------------------------------------------
-
-
-
-# --------------------------------------------------
 # Custom 404 Handler
 # --------------------------------------------------
 
@@ -51,6 +45,8 @@ async def custom_404(request: Request, exc):
             "detail": "Not Found",
             "scope_path": request.scope.get("path"),
             "x_matched_path": request.headers.get("x-matched-path"),
+            "x_original_url": request.headers.get("x-original-url"),
+            "x_forwarded_uri": request.headers.get("x-forwarded-uri"),
             "available_routes": [
                 getattr(route, "path", str(route))
                 for route in app.routes

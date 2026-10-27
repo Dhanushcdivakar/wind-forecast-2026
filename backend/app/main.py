@@ -48,35 +48,40 @@ async def get_analysis():
     return _cache
 
 
-@app.get("/")
+from fastapi import APIRouter
+
+router = APIRouter()
+
+
+@router.get("/")
 async def root():
     return {
         "status": "online",
         "service": "Wind Forecast Analytics API",
         "docs": "/docs",
         "health": "/api/health",
-        "overview": "/api/overview"
+        "overview": "/api/overview",
     }
 
 
-@app.get("/api/health")
+@router.get("/health")
 async def health():
     return {"status": "ok", "data_mode": "elexon"}
 
 
-@app.get("/api/overview")
+@router.get("/overview")
 async def overview():
     data = await get_analysis()
     return {key: data[key] for key in ("source", "period", "decision_rule", "summary")}
 
 
-@app.get("/api/generation")
+@router.get("/generation")
 async def generation():
     data = await get_analysis()
     return {key: data[key] for key in ("source", "selected_forecasts", "actuals")}
 
 
-@app.get("/api/accuracy")
+@router.get("/accuracy")
 async def accuracy():
     data = await get_analysis()
     return {
@@ -87,7 +92,7 @@ async def accuracy():
     }
 
 
-@app.get("/api/forecast-history")
+@router.get("/forecast-history")
 async def forecast_history(target_date: Optional[str] = Query(default=None)):
     data = await get_analysis()
     rows = data["forecast_history"]
@@ -96,7 +101,7 @@ async def forecast_history(target_date: Optional[str] = Query(default=None)):
     return {"source": data["source"], "records": rows}
 
 
-@app.get("/api/data")
+@router.get("/data")
 async def data_explorer(target_date: Optional[str] = Query(default=None)):
     data = await get_analysis()
     rows = data["selected_forecasts"]
@@ -105,8 +110,12 @@ async def data_explorer(target_date: Optional[str] = Query(default=None)):
     return {"source": data["source"], "records": rows}
 
 
-@app.post("/api/cache/clear")
+@router.post("/cache/clear")
 async def clear_cache():
     global _cache
     _cache = None
     return {"status": "cleared"}
+
+
+app.include_router(router, prefix="/api")
+app.include_router(router, prefix="")

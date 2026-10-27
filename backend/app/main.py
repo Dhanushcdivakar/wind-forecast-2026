@@ -27,6 +27,10 @@ app.add_middleware(
 async def vercel_path_middleware(request, call_next):
     matched = request.headers.get("x-matched-path")
     if matched:
+        if matched.endswith("/api/index.py"):
+            matched = matched[:-13] or "/"
+        elif matched == "/api/index.py":
+            matched = "/"
         request.scope["path"] = matched
     return await call_next(request)
 
@@ -62,7 +66,10 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
+@router.get("")
 @router.get("/")
+@router.get("/api")
+@router.get("/api/index.py")
 async def root():
     return {
         "status": "online",

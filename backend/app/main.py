@@ -48,6 +48,17 @@ async def get_analysis():
     return _cache
 
 
+@app.get("/")
+async def root():
+    return {
+        "status": "online",
+        "service": "Wind Forecast Analytics API",
+        "docs": "/docs",
+        "health": "/api/health",
+        "overview": "/api/overview"
+    }
+
+
 @app.get("/api/health")
 async def health():
     return {"status": "ok", "data_mode": "elexon"}
